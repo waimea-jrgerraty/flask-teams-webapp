@@ -1,0 +1,51 @@
+{#=====================================================
+  Thing page
+  - Shows details of a single thing
+  - Has a delete link to remove it
+=====================================================#}
+
+{% extends 'pages/base.jinja' %}
+
+
+{% block title %}
+
+    Flask Demo - Single Thing
+
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>A Single Thing...</h1>
+
+
+    <article>
+
+        <header>
+            <h3>{{ thing.name }}</h3>
+        </header>
+
+        <p>Price: <strong>${{ thing.price }}</strong></p>
+
+        <footer>
+
+            {# Only show delete link if logged in AND owner #}
+            {% if session.user_id and (thing.user_id == session.user_id) %}
+
+                <a href="/delete/{{ thing.id }}" onclick="return confirm('Really delete?');">Delete</a>
+
+            {% else %}
+
+                Owner: <strong>{{ thing.owner }}</strong>
+
+            {% endif %}
+
+        </footer>
+
+    </article>
+
+
+    <a role="button" href="/things">Back to Thing List</a>
+
+{% endblock %}
+

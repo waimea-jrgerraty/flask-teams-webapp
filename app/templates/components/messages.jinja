@@ -1,0 +1,23 @@
+{#=====================================================
+  Flash messages component
+  - Displays a list of flash messages
+=====================================================#}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+
+        <div id="messages">
+            <ul>
+                {% for category, message in messages %}
+
+                    <li class="message {{ category }}">
+                        {{ message }}
+                    </li>
+
+                {% endfor %}
+            </ul>
+        </div>
+
+    {% endif %}
+{% endwith %}
+

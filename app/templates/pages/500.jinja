@@ -1,0 +1,22 @@
+{#=====================================================
+  500 server error page
+=====================================================#}
+
+{% extends 'pages/base.jinja' %}
+
+
+{% block title %}
+
+    Flask Demo - Server Error
+
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>Sorry, something went wrong...</h1>
+
+    <p class="error">{{ error }}</p>
+
+{% endblock %}
+

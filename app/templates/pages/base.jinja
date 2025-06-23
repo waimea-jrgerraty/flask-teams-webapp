@@ -1,0 +1,85 @@
+{#=====================================================
+  Base template
+  - Used as the basis of all pages
+  - Uses a light colour theme by default
+  - Provides a main heading and navigation menu
+  - Has blocks for the page title and main content
+  - Loads PicoCSS and Pico Colours
+  - Loads a user stylesheet
+  - Loads JS utility functions
+  - Includes block for flash messages
+=====================================================#}
+
+<!DOCTYPE html>
+
+<html lang="en" data-theme="light">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="icon" href="/static/images/icon.svg">
+
+	<title>{% block title %}{% endblock %}</title>
+
+    <script src="/static/js/utils.js"></script>
+
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.slate.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+
+<body>
+
+    <header>
+        <nav>
+            <ul>
+                <li><strong><a href="/">Flask App Demo</a></strong></li>
+            </ul>
+
+            <ul>
+                {% if session.user_name %}
+
+                    <li>Hello, {{ session.user_name }}</li>
+
+                {% endif %}
+
+                <li><a href="/">Home</a></li>
+                <li><a href="/things">Things</a></li>
+                <li><a href="/about">About</a></li>
+
+                {% if session.user_id %}
+
+                    <li><a href="/logout">Logout</a></li>
+
+                {% else %}
+
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/register">Register</a></li>
+
+                {% endif %}
+
+            </ul>
+        </nav>
+    </header>
+
+
+    {# Show flash messages from any previous events #}
+    {% include "components/messages.jinja" %}
+
+
+    <main>
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+
+    {# Show debug info. Comment this out if not needed #}
+    {% include "components/debug.jinja" %}
+
+</body>
+
+</html>
+

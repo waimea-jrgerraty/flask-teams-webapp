@@ -1,0 +1,76 @@
+{#=====================================================
+  Things page
+  - List of things passed in as 'things' array
+  - Form for adding a new thing
+=====================================================#}
+
+{% extends 'pages/base.jinja' %}
+
+
+{% block title %}
+
+    Flask Demo - All Things
+
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>Things...</h1>
+
+
+    <article>
+
+        <ul>
+            {% for thing in things %}
+
+                <li>
+                    <a href="/thing/{{ thing.id }}">
+                        <strong>{{ thing.name }}</strong> - owned by {{ thing.owner }}
+                    </a>
+                </li>
+
+            {% else %}
+
+                <p>None!</p>
+
+            {% endfor %}
+        </ul>
+
+    </article>
+
+
+    {# Only show form if user is logged in #}
+    {% if session.user_id %}
+
+        <article>
+
+            <h3>Add a New Thing...</h3>
+
+            <form action="/add" method="POST">
+
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Name of new thing"
+                    required
+                >
+
+                <input
+                    type="number"
+                    name="price"
+                    min="0"
+                    placeholder="Price in dollars"
+                    required
+                >
+
+                <button>Add the Thing</button>
+
+            </form>
+
+        </article>
+
+    {% endif %}
+
+{% endblock %}
+

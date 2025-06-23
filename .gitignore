@@ -1,0 +1,16 @@
+#-------------------------------------------------------
+# Folders and files that should not be pushed to GitHub
+#-------------------------------------------------------
+
+# Compiled bytecode
+__pycache__/
+
+# Virtual Python environment
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# VS Code project settings
+.vscode
