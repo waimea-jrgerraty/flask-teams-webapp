@@ -30,35 +30,18 @@
     >
         <tr><th colspan="2"><strong>Request Data</strong></th></tr>
 
-        <tr><th>&nbsp;URL</th><td><strong>{{ request.path }}</strong></td></tr>
-
-        {% if request.url_rule %}
-            <tr><th>&nbsp;Matches</th><td><strong>
-                get("{{ request.url_rule|e }}")
-            </strong></td></tr>
-        {% endif %}
-
-        {% if request.endpoint %}
-            <tr><th>&nbsp;Handler</th><td><strong>
-                {{ request.endpoint }}()
-            </strong></td></tr>
-        {% endif %}
-
-        {% if request.view_args and request.view_args.items() %}
-            <tr><th>&nbsp;Params</th><td><strong>
+        <tr><th>&nbsp;URL  </th><td><strong>{{ request.path     }}</strong></td></tr>
+        <tr><th>&nbsp;Route</th><td><strong>{{ request.url_rule }}</strong></td></tr>
+        <tr><th>&nbsp;Func </th><td><strong>{{ request.endpoint }}</strong></td></tr>
+        <tr><th>&nbsp;Args </th><td>
+            {% if request.view_args and request.view_args.items() %}
                 {% for key, value in request.view_args.items() %}
-                    {{ key }}: {{ value }}<br>
+                    <strong>{{ key }}: {{ value }}</strong><br>
                 {% endfor %}
-            </strong></td></tr>
-        {% endif %}
-
-        {% if request.args and request.args.items() %}
-            <tr><th>&nbsp;Args</th><td><strong>
-                {% for key, value in request.args.items() %}
-                    {{ key }}: {{ value }}<br>
-                {% endfor %}
-            </strong></td></tr>
-        {% endif %}
+            {% else %}
+                None
+            {% endif %}
+        </td></tr>
 
         <tr><th colspan="2"><strong>Session Data</strong></th></tr>
 

@@ -2,50 +2,22 @@
   User Login page
   - Form for logging in
 =====================================================#}
-
-{% extends 'pages/base.jinja' %}
-
-
+{% extends "pages/base.jinja" %}
 {% block title %}
-
     Flask Demo - Login
-
-{% endblock %}
-
-
+{% endblock title %}
 {% block content %}
-
     <article>
-
         <header>
-            <h2>Login...</h2>
+            <h2>Login to TodoList</h2>
         </header>
-
-        <form action="/login-user" method="POST">
-
-            <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                required
-            >
-
-            <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                required
-            >
-
+        <form action="/login-user" method="post">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
             <button>Login</button>
-
         </form>
-
         <footer>
             Or, if you don't have an account, <a href="/register">register</a>
         </footer>
-
     </article>
-
-{% endblock %}
-
+{% endblock content %}

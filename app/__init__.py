@@ -1,48 +1,48 @@
-#===========================================================
+# ===========================================================
 # App Creation and Launch
-#===========================================================
+# ===========================================================
 
 from flask import Flask, render_template, request, flash, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 import html
 
 from app.helpers.session import init_session
-from app.helpers.db      import connect_db
-from app.helpers.errors  import init_error, not_found_error
+from app.helpers.db import connect_db
+from app.helpers.errors import init_error, not_found_error
 from app.helpers.logging import init_logging
-from app.helpers.auth    import login_required
-from app.helpers.time    import init_datetime, utc_timestamp, utc_timestamp_now
+from app.helpers.auth import login_required
+from app.helpers.time import init_datetime, utc_timestamp, utc_timestamp_now
 
 
 # Create the app
 app = Flask(__name__)
 
 # Configure app
-init_session(app)   # Setup a session for messages, etc.
-init_logging(app)   # Log requests
-init_error(app)     # Handle errors and exceptions
+init_session(app)  # Setup a session for messages, etc.
+init_logging(app)  # Log requests
+init_error(app)  # Handle errors and exceptions
 init_datetime(app)  # Handle UTC dates in timestamps
 
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Home page route
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.get("/")
 def index():
     return render_template("pages/home.jinja")
 
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # About page route
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.get("/about/")
 def about():
     return render_template("pages/about.jinja")
 
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Things page route - Show all the things, and new thing form
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.get("/things/")
 def show_all_things():
     with connect_db() as client:
@@ -57,7 +57,7 @@ def show_all_things():
 
             ORDER BY things.name ASC
         """
-        params=[]
+        params = []
         result = client.execute(sql, params)
         things = result.rows
 
@@ -65,9 +65,9 @@ def show_all_things():
         return render_template("pages/things.jinja", things=things)
 
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Thing page route - Show details of a single thing
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.get("/thing/<int:id>")
 def show_one_thing(id):
     with connect_db() as client:
@@ -98,15 +98,15 @@ def show_one_thing(id):
             return not_found_error()
 
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Route for adding a thing, using data posted from a form
 # - Restricted to logged in users
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.post("/add")
 @login_required
 def add_a_thing():
     # Get the data from the form
-    name  = request.form.get("name")
+    name = request.form.get("name")
     price = request.form.get("price")
 
     # Sanitise the text inputs
@@ -126,10 +126,10 @@ def add_a_thing():
         return redirect("/things")
 
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Route for deleting a thing, Id given in the route
 # - Restricted to logged in users
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.get("/delete/<int:id>")
 @login_required
 def delete_a_thing(id):
@@ -147,68 +147,58 @@ def delete_a_thing(id):
         return redirect("/things")
 
 
-
-
-
-
-
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # User registration form route
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.get("/register")
 def register_form():
     return render_template("pages/register.jinja")
 
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # User login form route
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.get("/login")
 def login_form():
     return render_template("pages/login.jinja")
 
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Route for adding a user when registration form submitted
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.post("/add-user")
 def add_user():
     # Get the data from the form
-    name = request.form.get("name")
     username = request.form.get("username")
     password = request.form.get("password")
 
+    # Sanitise the inputs)
+    username = html.escape(username)
+
+    # Hash the password
+    hash = generate_password_hash(password)
+
     with connect_db() as client:
-        # Attempt to find an existing record for that user
-        sql = "SELECT * FROM users WHERE username = ?"
-        params = [username]
-        result = client.execute(sql, params)
+        # Add the thing to the DB
+        sql = "INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)"
+        values = [username, hash]
+        result = client.execute(sql, values)
 
-        # No existing record found, so safe to add the user
-        if not result.rows:
-            # Sanitise the name
-            name = html.escape(name)
+        if result.rows_affected == 0:
+            flash("Username already exists.", "error")
+            return redirect("/signup/")
+        else:
+            # Handle session
+            session["userid"] = result.last_insert_rowid
+            session["username"] = username
 
-            # Salt and hash the password
-            hash = generate_password_hash(password)
-
-            # Add the user to the users table
-            sql = "INSERT INTO users (name, username, password_hash) VALUES (?, ?, ?)"
-            params = [name, username, hash]
-            client.execute(sql, params)
-
-            # And let them know it was successful and they can login
-            flash("Registration successful", "success")
-            return redirect("/login")
-
-        # Found an existing record, so prompt to try again
-        flash("Username already exists. Try again...", "error")
-        return redirect("/register")
+            flash(f"User {username} registered successfully", "success")
+            return redirect("/")
 
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Route for processing a user login
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.post("/login-user")
 def login_user():
     # Get the login form data
@@ -218,21 +208,20 @@ def login_user():
     with connect_db() as client:
         # Attempt to find a record for that user
         sql = "SELECT * FROM users WHERE username = ?"
-        params = [username]
-        result = client.execute(sql, params)
+        values = [username]
+        result = client.execute(sql, values)
 
         # Did we find a record?
         if result.rows:
             # Yes, so check password
             user = result.rows[0]
-            hash = user["password_hash"]
+            hash = user[2]
 
             # Hash matches?
             if check_password_hash(hash, password):
                 # Yes, so save info in the session
-                session["user_id"]   = user["id"]
-                session["user_name"] = user["name"]
-                session["logged_in"] = True
+                session["userid"] = user[0]
+                session["username"] = user[1]
 
                 # And head back to the home page
                 flash("Login successful", "success")
@@ -243,17 +232,15 @@ def login_user():
         return redirect("/login")
 
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 # Route for processing a user logout
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 @app.get("/logout")
 def logout():
     # Clear the details from the session
-    session.pop("user_id", None)
-    session.pop("user_name", None)
-    session.pop("logged_in", None)
+    session.pop("userid", None)
+    session.pop("username", None)
 
     # And head back to the home page
     flash("Logged out successfully", "success")
     return redirect("/")
-

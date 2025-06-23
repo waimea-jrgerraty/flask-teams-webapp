@@ -1,15 +1,14 @@
 {#=====================================================
-  Home page
-  - Hero style greeting banner
-  - List of things passed in as 'things' array
-  - Form for adding a new thing
+  Team page
 =====================================================#}
 {% extends "pages/base.jinja" %}
 {% block title %}
-    Team Tracker 5001
+    TodoList
 {% endblock title %}
 {% block content %}
     <article id="defaultPage">
-        <h1>Welcome to Team Tracker 5001</h1>
+        <h1>Welcome to TodoList</h1>
+        <p>Organize your tasks, boost your productivity, and never miss a deadline again. Simple, fast, and free.</p>
+        <a href="/register" role="button">Get Started</a>
     </article>
 {% endblock content %}
