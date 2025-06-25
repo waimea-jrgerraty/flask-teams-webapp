@@ -2,9 +2,19 @@
 # App Creation and Launch
 # ===========================================================
 
-from flask import Flask, render_template, request, flash, redirect, session
+from flask import (
+    Flask,
+    Response,
+    render_template,
+    redirect,
+    flash,
+    abort,
+    request,
+    session,
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 import html
+import base64
 
 from app.helpers.session import init_session
 from app.helpers.db import connect_db
@@ -29,7 +39,33 @@ init_datetime(app)  # Handle UTC dates in timestamps
 # -----------------------------------------------------------
 @app.get("/")
 def index():
-    return render_template("pages/home.jinja")
+    with connect_db() as client:
+        # Select basic information about teams ordered by the team's player count.
+        sql = """
+            SELECT 
+                teams.code, 
+                teams.name, 
+                COUNT(players.id) as player_count
+            FROM teams
+            LEFT JOIN players ON players.team = teams.code
+            GROUP BY teams.code
+            ORDER BY player_count DESC
+        """
+        result = client.execute(sql)
+
+        return render_template("pages/home.jinja", teams=result.rows)
+
+
+@app.get("/team-image/<code>")
+def team_image(code):
+    with connect_db() as client:
+        sql = "SELECT image_data, image_mime FROM teams WHERE code = ?"
+        result = client.execute(sql, [code])
+        if not result.rows or not result.rows[0][0] or not result.rows[0][1]:
+            abort(404)
+
+        row = result.rows[0]
+        return Response(row[0], mimetype=row[1])
 
 
 # -----------------------------------------------------------

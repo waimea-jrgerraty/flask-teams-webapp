@@ -9,7 +9,32 @@
     Team Tracker 5001
 {% endblock title %}
 {% block content %}
-    <article id="defaultPage">
-        <h1>Welcome to Team Tracker 5001</h1>
-    </article>
+    <h1>Teams</h1>
+    <section id="teams">
+        {% for team in teams %}
+            <a href="/team/{{ team.code }}" class="article-link">
+                <article>
+                    <h2>{{ team.name }}</h2>
+                    {% if team.image_base64 and team.image_mime %}
+                        <img src="/team-image/{{ team.code }}"
+                             alt="{{ team.name }} logo"
+                             height="256"
+                             width="256">
+                    {% else %}
+                        <img src="/static/images/placeholder.svg"
+                             alt="Placeholder logo"
+                             height="256"
+                             width="256">
+                    {% endif %}
+                    <footer>
+                        <p class="team-code">{{ team.code }}</p>
+                        <p class="player-count">
+                            {{ team.player_count }}
+                            <span class="material-symbols-outlined">group</span>
+                        </p>
+                    </footer>
+                </article>
+            </a>
+        {% endfor %}
+    </section>
 {% endblock content %}
